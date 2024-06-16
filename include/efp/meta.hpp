@@ -846,12 +846,12 @@ constexpr A _product(const A (&as)[n]) {
 // All
 // ! Not suitable for library implementation because of compile-time performance issue
 template<typename A, typename... As>
-using All = Bool<_and({A::value, As::value...})>;
+using And = Bool<_and({A::value, As::value...})>;
 
 // Any
 // ! Not suitable for library implementation because of compile-time performance issue
 template<typename A, typename... As>
-using Any = Bool<_or({A::value, As::value...})>;
+using Or = Bool<_or({A::value, As::value...})>;
 
 // Minimum
 // ! Not suitable for library implementation because of compile-time performance issue

@@ -383,7 +383,7 @@ bool is_null(const As& as) {
 
 // todo reverse
 
-// Special folds 
+// Special folds
 
 // and :: [Bool] -> Bool
 
