@@ -64,7 +64,7 @@ TEST_CASE("format", "[format]") {
     }
 
     SECTION("efp::Vcb") {
-        Vcb<int, 3> vcb {};
+        Vcb<int, 3> vcb{};
         vcb.push_back(1);
         vcb.push_back(2);
         vcb.push_back(3);
@@ -72,7 +72,7 @@ TEST_CASE("format", "[format]") {
     }
 
     SECTION("efp::Vcq") {
-        Vcq<int, 3> vcq {};
+        Vcq<int, 3> vcq{};
         vcq.push_back(1);
         vcq.push_back(2);
         CHECK(efp::format("{}", vcq) == "[1, 2]");

@@ -11,10 +11,8 @@ namespace efp {
 
 // Functor
 template<template<typename...> class TypeConstructor>
-struct Functor {
-    
-}
+struct Functor {}
 
 };  // namespace efp
 
-#endif 
+#endif

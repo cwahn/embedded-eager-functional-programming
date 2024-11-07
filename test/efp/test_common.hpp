@@ -10,32 +10,32 @@
 
 using namespace efp;
 
-const Array<double, 3> array_3 {1., 2., 3.};
-const Array<double, 5> array_5 {1., 2., 3., 4., 5.};
+const Array<double, 3> array_3{1., 2., 3.};
+const Array<double, 5> array_5{1., 2., 3., 4., 5.};
 
-const ArrVec<double, 3> arrvec_3 {1., 2., 3.};
-const ArrVec<double, 5> arrvec_5 {1., 2., 3., 4., 5.};
+const ArrVec<double, 3> arrvec_3{1., 2., 3.};
+const ArrVec<double, 5> arrvec_5{1., 2., 3., 4., 5.};
 
-const Vector<double> vector_3 {1., 2., 3.};
-const Vector<double> vector_5 {1., 2., 3., 4., 5.};
+const Vector<double> vector_3{1., 2., 3.};
+const Vector<double> vector_5{1., 2., 3., 4., 5.};
 
-const ArrayView<const double, 3> array_view_3 {data(array_3)};
-const ArrayView<const double, 5> array_view_5 {data(array_5)};
+const ArrayView<const double, 3> array_view_3{data(array_3)};
+const ArrayView<const double, 5> array_view_5{data(array_5)};
 
-const ArrVecView<const double, 3> arrvec_view_3 {data(vector_3), 3};
-const ArrVecView<const double, 5> arrvec_view_5 {data(vector_5), 5};
+const ArrVecView<const double, 3> arrvec_view_3{data(vector_3), 3};
+const ArrVecView<const double, 5> arrvec_view_5{data(vector_5), 5};
 
-const VectorView<const double> vector_view_3 {data(vector_3), 3};
-const VectorView<const double> vector_view_5 {data(vector_5), 5};
+const VectorView<const double> vector_view_3{data(vector_3), 3};
+const VectorView<const double> vector_view_5{data(vector_5), 5};
 
 const double c_array_3[3] = {1., 2., 3.};
 const double c_array_5[5] = {1., 2., 3., 4., 5.};
 
-const std::array<double, 3> stl_array_3 {1., 2., 3.};
-const std::array<double, 5> stl_array_5 {1., 2., 3., 4., 5.};
+const std::array<double, 3> stl_array_3{1., 2., 3.};
+const std::array<double, 5> stl_array_5{1., 2., 3., 4., 5.};
 
-const std::vector<double> stl_vector_3 {1., 2., 3.};
-const std::vector<double> stl_vector_5 {1., 2., 3., 4., 5.};
+const std::vector<double> stl_vector_3{1., 2., 3.};
+const std::vector<double> stl_vector_5{1., 2., 3., 4., 5.};
 
 // Thread local side effectful
 
@@ -105,7 +105,7 @@ public:
     static String resource_state_to_string() {
         const auto to_str = [](const Resource& resource) { return std::to_string(resource.id); };
         const auto strings = map(to_str, _resources);
-        return intercalate(String {", "}, strings);
+        return intercalate(String{", "}, strings);
     }
 
     static bool is_sound() {
@@ -122,14 +122,16 @@ class MockRaii {
     MockHW::Resource _resource;
 
 public:
-    MockRaii() : _resource(MockHW::acquire()) {}
+    MockRaii()
+        : _resource(MockHW::acquire()) {}
 
     ~MockRaii() {
         if (_resource.id != 0)
             MockHW::release(_resource);
     }
 
-    MockRaii(const MockRaii& other) : _resource(MockHW::acquire()) {
+    MockRaii(const MockRaii& other)
+        : _resource(MockHW::acquire()) {
         // Copy the value from the other resource
         _resource.value = other._resource.value;
     }
@@ -148,7 +150,8 @@ public:
         return *this;
     }
 
-    MockRaii(MockRaii&& other) : _resource(other._resource) {
+    MockRaii(MockRaii&& other)
+        : _resource(other._resource) {
         other._resource.id = 0;
     }
 
@@ -174,7 +177,7 @@ TEST_CASE("MockHW and MockRaii", "MockHW") {
         // Test with MockRaii and MockHW
         MockHW::reset();
         {
-            Enum<int, MockRaii> a = MockRaii {};
+            Enum<int, MockRaii> a = MockRaii{};
             CHECK(MockHW::remaining_resource_count() == 1);
             CHECK(MockHW::resource_state_to_int() == 1);
 
@@ -182,7 +185,7 @@ TEST_CASE("MockHW and MockRaii", "MockHW") {
             CHECK(MockHW::remaining_resource_count() == 2);
             CHECK(MockHW::resource_state_to_int() == 12);
 
-            Enum<int, MockRaii> c = MockRaii {};
+            Enum<int, MockRaii> c = MockRaii{};
             CHECK(MockHW::remaining_resource_count() == 3);
             CHECK(MockHW::resource_state_to_int() == 123);
 

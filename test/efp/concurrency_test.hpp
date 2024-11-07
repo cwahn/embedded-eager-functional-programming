@@ -99,7 +99,7 @@ TEST_CASE("NonBlockingQ Operations", "[NonBlockingQ]") {
 }
 
 TEST_CASE("DoubleBuffer Operations", "[DoubleBuffer]") {
-    DoubleBuffer<int, 10> buffer;  // Assuming a buffer size of 10 for testing
+    DoubleBuffer<int, 10> buffer; // Assuming a buffer size of 10 for testing
 
     SECTION("Initial State is Empty") {
         CHECK(buffer.empty());
@@ -107,7 +107,7 @@ TEST_CASE("DoubleBuffer Operations", "[DoubleBuffer]") {
 
     SECTION("Enqueue Adds Elements") {
         buffer.enqueue(1);
-        buffer.swap_buffer();  // Swap to make the enqueued element available for dequeue
+        buffer.swap_buffer(); // Swap to make the enqueued element available for dequeue
         CHECK_FALSE(buffer.empty());
     }
 
@@ -121,11 +121,11 @@ TEST_CASE("DoubleBuffer Operations", "[DoubleBuffer]") {
     SECTION("Elements Move to Read Buffer on Swap") {
         buffer.enqueue(1);
         buffer.enqueue(2);
-        buffer.swap_buffer();  // Now, the elements should be in the read buffer
+        buffer.swap_buffer(); // Now, the elements should be in the read buffer
         CHECK(buffer.dequeue() == 1);
         CHECK(buffer.dequeue() == 2);
         CHECK(buffer.empty());
     }
 }
 
-#endif  // CONCURRENCY_TEST_HPP_
+#endif // CONCURRENCY_TEST_HPP_

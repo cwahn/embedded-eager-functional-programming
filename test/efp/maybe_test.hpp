@@ -81,7 +81,7 @@ TEST_CASE("maybe_monad") {
                 return nothing;
             }
 
-            return Maybe<double> {12. / x};
+            return Maybe<double>{12. / x};
         };
 
         CHECK(bind(ma, div_12_by).is_nothing() == false);
@@ -104,7 +104,7 @@ TEST_CASE("maybe_monad") {
                 return nothing;
             }
 
-            return Maybe<double> {12. / x};
+            return Maybe<double>{12. / x};
         };
 
         CHECK((ma >>= div_12_by).is_nothing() == false);
@@ -214,6 +214,5 @@ TEST_CASE("EnumAt on Maybe") {
     CHECK(IsSame<EnumAt<0, Maybe<int>>, Nothing>::value);
     CHECK(IsSame<EnumAt<1, Maybe<int>>, int>::value);
 }
-
 
 #endif

@@ -90,8 +90,8 @@ TEST_CASE("BasicString<Char>", "[BasicString<Char>]") {
 
     SECTION("Destruction") {
         // This tests whether destruction happens without errors.
-        { String str("Temporary String"); }  // str goes out of scope here and should be destroyed
-        CHECK(true);  // If we reach this point, destruction didn't cause a crash
+        { String str("Temporary String"); } // str goes out of scope here and should be destroyed
+        CHECK(true);                        // If we reach this point, destruction didn't cause a crash
     }
 
     SECTION("BasicString<Char>::operator[]") {
@@ -157,12 +157,12 @@ TEST_CASE("BasicString<Char>", "[BasicString<Char>]") {
 
     SECTION("BasicString<Char>::pop_back") {
         String str("Hello");
-        str.erase(0);  // Remove 'H'
+        str.erase(0); // Remove 'H'
         CHECK(str.size() == 4);
         CHECK(str == "ello");
 
         WString wstr(L"Hello");
-        wstr.erase(0);  // Remove 'H'
+        wstr.erase(0); // Remove 'H'
         CHECK(wstr.size() == 4);
         CHECK(wstr == L"ello");
     }

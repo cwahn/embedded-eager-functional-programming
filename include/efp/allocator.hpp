@@ -8,85 +8,85 @@
 
 namespace efp {
 
-template<typename Alloc>
-struct AllocatorTraits {
-    using allocator_type = Alloc;
-    using value_type = typename Alloc::value_type;
-    using pointer = typename Alloc::pointer;
-    using const_pointer = typename Alloc::const_pointer;
-    using size_type = typename Alloc::size_type;
-    using difference_type = typename Alloc::difference_type;
+    template <typename Alloc>
+    struct AllocatorTraits {
+        using allocator_type = Alloc;
+        using value_type = typename Alloc::value_type;
+        using pointer = typename Alloc::pointer;
+        using const_pointer = typename Alloc::const_pointer;
+        using size_type = typename Alloc::size_type;
+        using difference_type = typename Alloc::difference_type;
 
-    template<typename T>
-    using rebind_alloc = typename Alloc::template rebind<T>::other;
+        template <typename T>
+        using rebind_alloc = typename Alloc::template rebind<T>::other;
 
-    static pointer allocate(Alloc& alloc, size_type n) {
-        return alloc.allocate(n);
-    }
+        static pointer allocate(Alloc& alloc, size_type n) {
+            return alloc.allocate(n);
+        }
 
-    static void deallocate(Alloc& alloc, pointer p, size_type n) {
-        alloc.deallocate(p, n);
-    }
+        static void deallocate(Alloc& alloc, pointer p, size_type n) {
+            alloc.deallocate(p, n);
+        }
 
-    template<typename T, typename... Args>
-    static void construct(Alloc& alloc, T* p, Args&&... args) {
-        // Assuming your environment supports forwarding and placement new
-        alloc.construct(p, std::forward<Args>(args)...);
-    }
+        template <typename T, typename... Args>
+        static void construct(Alloc& alloc, T* p, Args&&... args) {
+            // Assuming your environment supports forwarding and placement new
+            alloc.construct(p, std::forward<Args>(args)...);
+        }
 
-    template<typename T>
-    static void destroy(Alloc& alloc, T* p) {
-        alloc.destroy(p);
-    }
+        template <typename T>
+        static void destroy(Alloc& alloc, T* p) {
+            alloc.destroy(p);
+        }
 
-    static size_type max_size(const Alloc& alloc) noexcept {
-        return alloc.max_size();
-    }
-};
-
-template<typename T>
-class Allocator {
-public:
-    using value_type = T;
-    using pointer = T*;
-    using const_pointer = const T*;
-    using reference = T&;
-    using const_reference = const T&;
-    using size_type = size_t;
-    using difference_type = ptrdiff_t;
-
-    template<typename U>
-    struct rebind {
-        using other = Allocator<U>;
+        static size_type max_size(const Alloc& alloc) noexcept {
+            return alloc.max_size();
+        }
     };
 
-    Allocator() noexcept = default;
+    template <typename T>
+    class Allocator {
+    public:
+        using value_type = T;
+        using pointer = T*;
+        using const_pointer = const T*;
+        using reference = T&;
+        using const_reference = const T&;
+        using size_type = size_t;
+        using difference_type = ptrdiff_t;
 
-    template<typename U>
-    Allocator(const Allocator<U>&) noexcept {}
+        template <typename U>
+        struct rebind {
+            using other = Allocator<U>;
+        };
 
-    pointer allocate(size_type n) {
-        return static_cast<pointer>(::operator new(n * sizeof(T)));
-    }
+        Allocator() noexcept = default;
 
-    void deallocate(pointer p, size_type) {
-        ::operator delete(p);
-    }
+        template <typename U>
+        Allocator(const Allocator<U>&) noexcept {}
 
-    size_type max_size() const noexcept {
-        return size_type(-1) / sizeof(T);
-    }
+        pointer allocate(size_type n) {
+            return static_cast<pointer>(::operator new(n * sizeof(T)));
+        }
 
-    void construct(pointer p, const T& t) {
-        new (p) T(t);
-    }
+        void deallocate(pointer p, size_type) {
+            ::operator delete(p);
+        }
 
-    void destroy(pointer p) {
-        p->~T();
-    }
-};
+        size_type max_size() const noexcept {
+            return size_type(-1) / sizeof(T);
+        }
 
-}  // namespace efp
+        void construct(pointer p, const T& t) {
+            new (p) T(t);
+        }
+
+        void destroy(pointer p) {
+            p->~T();
+        }
+    };
+
+} // namespace efp
 
 // #endif
 

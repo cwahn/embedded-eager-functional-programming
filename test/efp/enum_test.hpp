@@ -22,7 +22,7 @@ TEST_CASE("Enum Rule of 5", "Enum") {
         SECTION("Non-trivially copyable") {
             {
                 MockHW::reset();
-                Enum<int, MockRaii> a = MockRaii {};
+                Enum<int, MockRaii> a = MockRaii{};
                 CHECK(MockHW::resource_state_to_int() == 1);
             }
             CHECK(MockHW::is_sound());
@@ -41,7 +41,7 @@ TEST_CASE("Enum Rule of 5", "Enum") {
         SECTION("Non-trivially copyable") {
             {
                 MockHW::reset();
-                Enum<int, MockRaii> a = MockRaii {};
+                Enum<int, MockRaii> a = MockRaii{};
                 CHECK(MockHW::resource_state_to_int() == 1);
 
                 Enum<int, MockRaii> b = a;
@@ -64,10 +64,10 @@ TEST_CASE("Enum Rule of 5", "Enum") {
         SECTION("Non-trivially copyable") {
             {
                 MockHW::reset();
-                Enum<int, MockRaii> a = MockRaii {};
+                Enum<int, MockRaii> a = MockRaii{};
                 CHECK(MockHW::resource_state_to_int() == 1);
 
-                Enum<int, MockRaii> b = MockRaii {};
+                Enum<int, MockRaii> b = MockRaii{};
                 CHECK(MockHW::resource_state_to_int() == 12);
 
                 b = a;
@@ -90,7 +90,7 @@ TEST_CASE("Enum Rule of 5", "Enum") {
         SECTION("Non-trivially copyable") {
             {
                 MockHW::reset();
-                Enum<int, MockRaii> a = MockRaii {};
+                Enum<int, MockRaii> a = MockRaii{};
                 CHECK(MockHW::resource_state_to_int() == 1);
 
                 Enum<int, MockRaii> b = efp::move(a);
@@ -113,10 +113,10 @@ TEST_CASE("Enum Rule of 5", "Enum") {
         SECTION("Non-trivially copyable") {
             {
                 MockHW::reset();
-                Enum<int, MockRaii> a = MockRaii {};
+                Enum<int, MockRaii> a = MockRaii{};
                 CHECK(MockHW::resource_state_to_int() == 1);
 
-                Enum<int, MockRaii> b = MockRaii {};
+                Enum<int, MockRaii> b = MockRaii{};
                 CHECK(MockHW::resource_state_to_int() == 12);
 
                 b = efp::move(a);
@@ -153,7 +153,7 @@ TEST_CASE("WildCard") {
 
         const auto wc = [&]() { wild_card_work = true; };
 
-        const auto wrapped = detail::WildCardWrapper<CVRemoved<decltype(wc)>> {wc};
+        const auto wrapped = detail::WildCardWrapper<CVRemoved<decltype(wc)>>{wc};
         wrapped(42);
 
         CHECK(wild_card_work == true);
@@ -162,7 +162,7 @@ TEST_CASE("WildCard") {
     SECTION("Non-void return") {
         const auto wc = [&]() { return 42; };
 
-        const auto wrapped = detail::WildCardWrapper<CVRemoved<decltype(wc)>> {wc};
+        const auto wrapped = detail::WildCardWrapper<CVRemoved<decltype(wc)>>{wc};
 
         CHECK(wrapped(unit) == 42);
     }
@@ -258,7 +258,7 @@ TEST_CASE("enum_type") {
 // }
 
 struct TemplateBranch {
-    template<typename A>
+    template <typename A>
     int operator()(const A& a) {
         return a * 2;
     }
@@ -312,8 +312,7 @@ TEST_CASE("enum_match") {
         a.match(
             [&](bool x) { return b * 0; },
             [&](int x) { return b * 1; },
-            [&](double x) { return b * 2; }
-        );
+            [&](double x) { return b * 2; });
 
         CHECK(b == 42);
     }
@@ -327,8 +326,7 @@ TEST_CASE("enum_match") {
             [&](int x) { return b * 1; },
             [&](double x) { return b * 2; },
             [&](float x) { return b * 3; },
-            [&](long x) { return b * 4; }
-        );
+            [&](long x) { return b * 4; });
 
         CHECK(b == 42);
     }
@@ -346,7 +344,7 @@ TEST_CASE("enum_match") {
 
         using MajorState = efp::Enum<InitState, AState, BState, ErrorState, TerminatedState>;
 
-        MajorState a {InitState {}};
+        MajorState a{InitState{}};
 
         int b = 42;
 
@@ -355,8 +353,7 @@ TEST_CASE("enum_match") {
             [&](AState x) { return b * 1; },
             [&](BState x) { return b * 2; },
             [&](ErrorState x) { return b * 3; },
-            [&](TerminatedState x) { return b * 4; }
-        );
+            [&](TerminatedState x) { return b * 4; });
 
         CHECK(b == 42);
     }

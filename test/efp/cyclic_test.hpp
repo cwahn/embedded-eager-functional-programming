@@ -101,6 +101,14 @@ TEST_CASE("Vcb Rule of 5", "Vcb") {
 }
 
 TEST_CASE("Vcb") {
+
+    SECTION("Initializer List Construction", "Vcb") {
+        const Vcb<int, 3> vcb{1, 2, 3};
+        CHECK(vcb[0] == 1);
+        CHECK(vcb[1] == 2);
+        CHECK(vcb[2] == 3);
+    }
+
     SECTION("0") {
         Vcb<int, 3> vcb;
         CHECK(IsSame<Element<decltype(vcb)>, int>::value == true);
@@ -146,8 +154,8 @@ TEST_CASE("Vcq Rule of 5", "Vcq") {
             {
                 MockHW::reset();
                 Vcq<MockRaii, 3> vcq;
-                vcq.push_back(MockRaii {});
-                vcq.push_back(MockRaii {});
+                vcq.push_back(MockRaii{});
+                vcq.push_back(MockRaii{});
 
                 Vcq<MockRaii, 3> vcq_copy = vcq;
             }
@@ -161,13 +169,13 @@ TEST_CASE("Vcq Rule of 5", "Vcq") {
             {
                 MockHW::reset();
                 Vcq<MockRaii, 3> vcq;
-                vcq.push_back(MockRaii {});
+                vcq.push_back(MockRaii{});
                 // CHECK(MockHW::resource_state_to_string() == "");
-                vcq.push_back(MockRaii {});
+                vcq.push_back(MockRaii{});
                 // CHECK(MockHW::resource_state_to_string() == "");
-                vcq.push_back(MockRaii {});
+                vcq.push_back(MockRaii{});
                 // CHECK(MockHW::resource_state_to_string() == "");
-                vcq.push_back(MockRaii {});
+                vcq.push_back(MockRaii{});
                 // CHECK(MockHW::resource_state_to_string() == "");
 
                 Vcq<MockRaii, 3> vcq_copy = vcq;
@@ -187,8 +195,8 @@ TEST_CASE("Vcq Rule of 5", "Vcq") {
             {
                 MockHW::reset();
                 Vcq<MockRaii, 3> vcq;
-                vcq.push_back(MockRaii {});
-                vcq.push_back(MockRaii {});
+                vcq.push_back(MockRaii{});
+                vcq.push_back(MockRaii{});
 
                 Vcq<MockRaii, 3> vcq_copy;
 
@@ -204,10 +212,10 @@ TEST_CASE("Vcq Rule of 5", "Vcq") {
             {
                 MockHW::reset();
                 Vcq<MockRaii, 3> vcq;
-                vcq.push_back(MockRaii {});
-                vcq.push_back(MockRaii {});
-                vcq.push_back(MockRaii {});
-                vcq.push_back(MockRaii {});
+                vcq.push_back(MockRaii{});
+                vcq.push_back(MockRaii{});
+                vcq.push_back(MockRaii{});
+                vcq.push_back(MockRaii{});
 
                 Vcq<MockRaii, 3> vcq_copy;
 
@@ -225,8 +233,8 @@ TEST_CASE("Vcq Rule of 5", "Vcq") {
             {
                 MockHW::reset();
                 Vcq<MockRaii, 3> vcq;
-                vcq.push_back(MockRaii {});
-                vcq.push_back(MockRaii {});
+                vcq.push_back(MockRaii{});
+                vcq.push_back(MockRaii{});
 
                 Vcq<MockRaii, 3> vcq_move = efp::move(vcq);
             }
@@ -240,10 +248,10 @@ TEST_CASE("Vcq Rule of 5", "Vcq") {
             {
                 MockHW::reset();
                 Vcq<MockRaii, 3> vcq;
-                vcq.push_back(MockRaii {});
-                vcq.push_back(MockRaii {});
-                vcq.push_back(MockRaii {});
-                vcq.push_back(MockRaii {});
+                vcq.push_back(MockRaii{});
+                vcq.push_back(MockRaii{});
+                vcq.push_back(MockRaii{});
+                vcq.push_back(MockRaii{});
 
                 Vcq<MockRaii, 3> vcq_move = efp::move(vcq);
             }
@@ -259,8 +267,8 @@ TEST_CASE("Vcq Rule of 5", "Vcq") {
             {
                 MockHW::reset();
                 Vcq<MockRaii, 3> vcq;
-                vcq.push_back(MockRaii {});
-                vcq.push_back(MockRaii {});
+                vcq.push_back(MockRaii{});
+                vcq.push_back(MockRaii{});
 
                 Vcq<MockRaii, 3> vcq_move;
 
@@ -276,10 +284,10 @@ TEST_CASE("Vcq Rule of 5", "Vcq") {
             {
                 MockHW::reset();
                 Vcq<MockRaii, 3> vcq;
-                vcq.push_back(MockRaii {});
-                vcq.push_back(MockRaii {});
-                vcq.push_back(MockRaii {});
-                vcq.push_back(MockRaii {});
+                vcq.push_back(MockRaii{});
+                vcq.push_back(MockRaii{});
+                vcq.push_back(MockRaii{});
+                vcq.push_back(MockRaii{});
 
                 Vcq<MockRaii, 3> vcq_move;
 
@@ -291,6 +299,13 @@ TEST_CASE("Vcq Rule of 5", "Vcq") {
 }
 
 TEST_CASE("Vcq") {
+    // SECTION("Initializer List Construction", "Vcq") {
+    //     const Vcq<int, 3> vcq{1, 2, 3};
+    //     CHECK(vcq[0] == 1);
+    //     CHECK(vcq[1] == 2);
+    //     CHECK(vcq[2] == 3);
+    // }
+
     SECTION("Array") {
         Vcq<int, 3> vcq;
         CHECK(IsSame<Element<decltype(vcq)>, int>::value == true);
