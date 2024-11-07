@@ -396,11 +396,11 @@ namespace efp {
             }
 
             for (size_t i = _size; i > index; --i) {
-                new (_data + i) Element(efp::move(_data[i - 1]));
+                new (_data + i) Element{efp::move(_data[i - 1])};
                 (_data + i - 1)->~Element();
             }
 
-            new (_data + index) Element(value);
+            new (_data + index) Element{value};
 
             ++_size;
         }
@@ -563,11 +563,9 @@ namespace efp {
                 : _allocator(other._allocator), _size(other._size), _capacity(other._capacity) {
                 if (other._data) {
                     // Member function call in not allowed in member initializer list
-                    // _data = _allocator.allocate(_capacity);
                     _data = AllocatorTraits<Allocator>::allocate(_allocator, _capacity);
 
                     for (size_t i = 0; i < _size; ++i) {
-                        // _allocator.construct(_data + i, other._data[i]);
                         AllocatorTraits<Allocator>::construct(_allocator, _data + i, other._data[i]);
                     }
                 }
@@ -577,7 +575,6 @@ namespace efp {
             VectorBase& operator=(const VectorBase& other) noexcept {
                 if (this != &other) {
                     for (size_t i = 0; i < _size; ++i) {
-                        // _allocator.destroy(_data + i);
                         AllocatorTraits<Allocator>::destroy(_allocator, _data + i);
                     }
 
@@ -586,7 +583,6 @@ namespace efp {
                     }
 
                     for (size_t i = 0; i < other._size; ++i) {
-                        // _allocator.construct(_data + i, other._data[i]);
                         AllocatorTraits<Allocator>::construct(_allocator, _data + i, other._data[i]);
                     }
                 }
@@ -604,10 +600,8 @@ namespace efp {
             VectorBase& operator=(VectorBase&& other) noexcept {
                 if (this != &other) {
                     for (size_t i = 0; i < _size; ++i) {
-                        // _allocator.destroy(_data + i);
                         AllocatorTraits<Allocator>::destroy(_allocator, _data + i);
                     }
-                    // _allocator.deallocate(_data, _capacity);
                     AllocatorTraits<Allocator>::deallocate(_allocator, _data, _capacity);
 
                     _data = other._data;
@@ -625,7 +619,6 @@ namespace efp {
             ~VectorBase() {
                 if (_data) {
                     for (size_t i = 0; i < _size; ++i) {
-                        // _allocator.destroy(_data + i);
                         AllocatorTraits<Allocator>::destroy(_allocator, _data + i);
                     }
 
@@ -633,18 +626,6 @@ namespace efp {
                     _data = nullptr;
                 }
             }
-
-            // VectorBase(InitializerList<Element> il)
-            //     : _allocator(Allocator()), _size(il.size()), _capacity(il.size() + 1) {
-            //     // _data = _allocator.allocate(_capacity);
-            //     _data = AllocatorTraits<Allocator>::allocate(_allocator, _capacity);
-
-            //     size_t index = 0;
-            //     for (const auto& e : il) {
-            //         // _allocator.construct(_data + index++, e);
-            //         AllocatorTraits<Allocator>::construct(_allocator, _data + index++, e);
-            //     }
-            // }
 
             VectorBase(InitializerList<Element> il, const Allocator& allocator = Allocator())
                 : _allocator(allocator), _size(il.size()), _capacity(il.size() + 1) {
@@ -659,11 +640,9 @@ namespace efp {
             template <size_t ct_size_>
             VectorBase(const Array<Element, ct_size_>& as)
                 : _allocator(Allocator()), _size(ct_size_), _capacity(ct_size_ + 1) {
-                // _data = _allocator.allocate(_capacity);
                 _data = AllocatorTraits<Allocator>::allocate(_allocator, _capacity);
 
                 for (size_t i = 0; i < _size; ++i) {
-                    // _allocator.construct(_data + i, as[i]);
                     AllocatorTraits<Allocator>::construct(_allocator, _data + i, as[i]);
                 }
             }
@@ -671,11 +650,9 @@ namespace efp {
             template <size_t ct_cap_>
             VectorBase(const ArrVec<Element, ct_cap_>& as)
                 : _allocator(Allocator()), _size(as.size()), _capacity(as.size() + 1) {
-                // _data = _allocator.allocate(_capacity);
                 _data = AllocatorTraits<Allocator>::allocate(_allocator, _capacity);
 
                 for (size_t i = 0; i < _size; ++i) {
-                    // _allocator.construct(_data + i, as[i]);
                     AllocatorTraits<Allocator>::construct(_allocator, _data + i, as[i]);
                 }
             }
@@ -711,7 +688,6 @@ namespace efp {
             }
 
             size_t max_size() const {
-                // return _allocator.max_size();
                 return AllocatorTraits<Allocator>::max_size(_allocator);
             }
 
@@ -726,11 +702,9 @@ namespace efp {
 
             void reserve(size_t new_capacity) {
                 if (new_capacity > _capacity) {
-                    // Element* new_data = _allocator.allocate(new_capacity);
                     Element* new_data = AllocatorTraits<Allocator>::allocate(_allocator, new_capacity);
 
                     for (size_t i = 0; i < _size; ++i) {
-                        // _allocator.construct(new_data + i, efp::move(_data[i]));
                         AllocatorTraits<Allocator>::construct(
                             _allocator,
                             new_data + i,
@@ -738,11 +712,9 @@ namespace efp {
                     }
 
                     for (size_t i = 0; i < _size; ++i) {
-                        // _allocator.destroy(_data + i);
                         AllocatorTraits<Allocator>::destroy(_allocator, _data + i);
                     }
 
-                    // _allocator.deallocate(_data, _capacity);
                     AllocatorTraits<Allocator>::deallocate(_allocator, _data, _capacity);
 
                     _data = new_data;
@@ -757,7 +729,6 @@ namespace efp {
 
                     // Move existing elements to the new storage
                     for (size_t i = 0; i < _size; ++i) {
-                        // _allocator.construct(new_data + i, efp::move(_data[i]));
                         AllocatorTraits<Allocator>::construct(
                             _allocator,
                             new_data + i,
@@ -766,10 +737,8 @@ namespace efp {
 
                     // Destroy and deallocate old storage
                     for (size_t i = 0; i < _size; ++i) {
-                        // _allocator.destroy(_data + i);
                         AllocatorTraits<Allocator>::destroy(_allocator, _data + i);
                     }
-                    // _allocator.deallocate(_data, _capacity);
                     AllocatorTraits<Allocator>::deallocate(_allocator, _data, _capacity);
 
                     // Update data pointer and capacity
@@ -783,7 +752,6 @@ namespace efp {
                     reserve(_size == 0 ? 2 : 2 * _size + 1);
                 }
 
-                // _allocator.construct(_data + _size, value);
                 AllocatorTraits<Allocator>::construct(_allocator, _data + _size, value);
                 ++_size;
             }
@@ -793,7 +761,6 @@ namespace efp {
                     reserve(_size == 0 ? 2 : 2 * _size + 1);
                 }
 
-                // _allocator.construct(_data + _size, efp::move(value));
                 AllocatorTraits<Allocator>::construct(_allocator, _data + _size, efp::move(value));
                 ++_size;
             }
@@ -804,7 +771,6 @@ namespace efp {
                     reserve(_size == 0 ? 2 : 2 * _size + 1);
                 }
 
-                // _allocator.construct(_data + _size, efp::forward<Args>(args)...);
                 AllocatorTraits<Allocator>::construct(
                     _allocator,
                     _data + _size,
@@ -817,7 +783,6 @@ namespace efp {
                     throw RuntimeError("VectorBase::pop_back: size must be greater than 0");
                 }
 
-                // _allocator.destroy(_data + _size-- - 1);
                 AllocatorTraits<Allocator>::destroy(_allocator, _data + _size-- - 1);
             }
 
@@ -834,7 +799,6 @@ namespace efp {
                     _data[i] = efp::move(_data[i - 1]);
                 }
 
-                // _allocator.construct(_data + index, value);
                 AllocatorTraits<Allocator>::construct(_allocator, _data + index, value);
                 ++_size;
             }
@@ -844,7 +808,6 @@ namespace efp {
                     throw RuntimeError("VectorBase::erase: index must be less than or equal to size");
                 }
 
-                // _allocator.destroy(_data + index);
                 AllocatorTraits<Allocator>::destroy(_allocator, _data + index);
 
                 for (size_t i = index; i < _size - 1; ++i) {
@@ -856,7 +819,6 @@ namespace efp {
 
             void clear() {
                 for (size_t i = 0; i < _size; ++i) {
-                    // _allocator.destroy(_data + i);
                     AllocatorTraits<Allocator>::destroy(_allocator, _data + i);
                 }
                 _size = 0;
@@ -893,13 +855,11 @@ namespace efp {
         protected:
             template <typename Last>
             void _construct_elements(size_t& index, const Last& last) {
-                // _allocator.construct(_data + index++, last);
                 AllocatorTraits<Allocator>::construct(_allocator, _data + index++, last);
             }
 
             template <typename Head, typename... Tail>
             void _construct_elements(size_t& index, const Head& head, const Tail&... tail) {
-                // _allocator.construct(_data + index++, head);
                 AllocatorTraits<Allocator>::construct(_allocator, _data + index++, head);
                 _construct_elements(index, tail...);
             }
