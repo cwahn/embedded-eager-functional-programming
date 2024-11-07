@@ -18,22 +18,24 @@ namespace efp {
 
         Vcb() {
             for (size_t i = 0; i < ct_size * 2; ++i) {
-                new (_buffer + i) A{};
+                new (_buffer + i) Element{};
             }
             _data = _buffer;
         }
 
         Vcb(const Vcb& other) {
             for (size_t i = 0; i < ct_size * 2; ++i) {
-                new (_buffer + i) A(other._buffer[i]);
+                // new (_buffer + i) Element{other._buffer[i]};
+                new (_buffer + i) Element{other._buffer[i]};
             }
             _data = _buffer + (other._data - other._buffer);
         }
 
         Vcb& operator=(const Vcb& other) {
             for (size_t i = 0; i < ct_size * 2; ++i) {
-                (_buffer + i)->~A();
-                new (_buffer + i) A(other._buffer[i]);
+                (_buffer + i)->~Element();
+                // new (_buffer + i) Element{other._buffer[i]};
+                new (_buffer + i) Element{other._buffer[i]};
             }
             _data = _buffer + (other._data - other._buffer);
             return *this;
@@ -41,7 +43,8 @@ namespace efp {
 
         Vcb(Vcb&& other) noexcept {
             for (size_t i = 0; i < ct_size * 2; ++i) {
-                new (_buffer + i) A(efp::move(other._buffer[i]));
+                // new (_buffer + i) Element{efp::move(other._buffer[i])};
+                new (_buffer + i) Element{efp::move(other._buffer[i])};
             }
 
             _data = _buffer + (other._data - other._buffer);
@@ -49,8 +52,9 @@ namespace efp {
 
         Vcb operator=(Vcb&& other) noexcept {
             for (size_t i = 0; i < ct_size * 2; ++i) {
-                (_buffer + i)->~A();
-                new (_buffer + i) A(efp::move(other._buffer[i]));
+                (_buffer + i)->~Element();
+                // new (_buffer + i) Element{efp::move(other._buffer[i])};
+                new (_buffer + i) Element{efp::move(other._buffer[i])};
             }
 
             _data = _buffer + (other._data - other._buffer);
@@ -59,7 +63,7 @@ namespace efp {
 
         ~Vcb() {
             for (size_t i = 0; i < ct_size * 2; ++i) {
-                (_buffer + i)->~A();
+                (_buffer + i)->~Element();
             }
         }
 
@@ -70,8 +74,8 @@ namespace efp {
 
             size_t index = 0;
             for (const auto& e : il) {
-                new (_buffer + index) A{e};
-                new (_buffer + ct_size + index) A{e};
+                new (_buffer + index) Element{e};
+                new (_buffer + ct_size + index) Element{e};
                 ++index;
             }
 
@@ -87,11 +91,11 @@ namespace efp {
         }
 
         void push_back(A value) {
-            _data->~A();
-            (_data + ct_size)->~A();
+            _data->~Element();
+            (_data + ct_size)->~Element();
 
-            new (_data) A{value};
-            new (_data + ct_size) A{value};
+            new (_data) Element{value};
+            new (_data + ct_size) Element{value};
 
             ++_data;
             _data -= ct_size * (_data == _buffer + ct_capacity);
@@ -197,8 +201,8 @@ namespace efp {
             for (size_t i = 0; i < other._size; ++i) {
                 const auto j =
                     read_offset + i < ct_capacity ? read_offset + i : read_offset + i - ct_capacity;
-                new (_buffer + j) A(other._buffer[i]);
-                new (_buffer + ct_capacity + j) A(other._buffer[i]);
+                new (_buffer + j) Element{other._buffer[i]};
+                new (_buffer + ct_capacity + j) Element{other._buffer[i]};
             }
 
             _size = other._size;
@@ -211,8 +215,8 @@ namespace efp {
             for (size_t i = 0; i < _size; ++i) {
                 const auto j =
                     read_offset + i < ct_capacity ? read_offset + i : read_offset + i - ct_capacity;
-                (_buffer + j)->~A();
-                (_buffer + ct_capacity + j)->~A();
+                (_buffer + j)->~Element();
+                (_buffer + ct_capacity + j)->~Element();
             }
 
             const auto read_offset_other = other._read - other._buffer;
@@ -220,8 +224,8 @@ namespace efp {
                 const auto j = read_offset_other + i < ct_capacity
                                    ? read_offset_other + i
                                    : read_offset_other + i - ct_capacity;
-                new (_buffer + j) A(other._buffer[i]);
-                new (_buffer + ct_capacity + j) A(other._buffer[i]);
+                new (_buffer + j) Element{other._buffer[i]};
+                new (_buffer + ct_capacity + j) Element{other._buffer[i]};
             }
 
             _size = other._size;
@@ -236,8 +240,8 @@ namespace efp {
                 const auto j = read_offset_other + i < ct_capacity
                                    ? read_offset_other + i
                                    : read_offset_other + i - ct_capacity;
-                new (_buffer + j) A(efp::move(other._buffer[i]));
-                new (_buffer + ct_capacity + j) A(efp::move(other._buffer[i]));
+                new (_buffer + j) Element{efp::move(other._buffer[i])};
+                new (_buffer + ct_capacity + j) Element{efp::move(other._buffer[i])};
             }
 
             _size = other._size;
@@ -250,8 +254,8 @@ namespace efp {
             for (size_t i = 0; i < _size; ++i) {
                 const auto j =
                     read_offset + i < ct_capacity ? read_offset + i : read_offset + i - ct_capacity;
-                (_buffer + j)->~A();
-                (_buffer + ct_capacity + j)->~A();
+                (_buffer + j)->~Element();
+                (_buffer + ct_capacity + j)->~Element();
             }
 
             const auto read_offset_other = other._read - other._buffer;
@@ -259,8 +263,8 @@ namespace efp {
                 const auto j = read_offset_other + i < ct_capacity
                                    ? read_offset_other + i
                                    : read_offset_other + i - ct_capacity;
-                new (_buffer + j) A(efp::move(other._buffer[i]));
-                new (_buffer + ct_capacity + j) A(efp::move(other._buffer[i]));
+                new (_buffer + j) Element{efp::move(other._buffer[i])};
+                new (_buffer + ct_capacity + j) Element{efp::move(other._buffer[i])};
             }
 
             _size = other._size;
@@ -274,8 +278,8 @@ namespace efp {
             for (size_t i = 0; i < _size; ++i) {
                 const auto j =
                     read_offset + i < ct_capacity ? read_offset + i : read_offset + i - ct_capacity;
-                (_buffer + j)->~A();
-                (_buffer + ct_capacity + j)->~A();
+                (_buffer + j)->~Element();
+                (_buffer + ct_capacity + j)->~Element();
             }
         }
 
@@ -289,12 +293,12 @@ namespace efp {
 
         void push_back(const A& value) {
             if (_size == ct_capacity) { // Has to destroy the oldest element if the buffer is full
-                _write->~A();
-                (_write + ct_capacity)->~A();
+                _write->~Element();
+                (_write + ct_capacity)->~Element();
             }
 
-            new (_write) A{value};
-            new (_write + ct_capacity) A{value};
+            new (_write) Element{value};
+            new (_write + ct_capacity) Element{value};
 
             ++_write;
             _write -= ct_capacity * (_write == _buffer + ct_capacity);
@@ -312,8 +316,8 @@ namespace efp {
         A pop_front() {
             A value{efp::move(*_read)};
 
-            _read->~A();
-            (_read + ct_capacity)->~A();
+            _read->~Element();
+            (_read + ct_capacity)->~Element();
             _size--;
 
             _read++;
