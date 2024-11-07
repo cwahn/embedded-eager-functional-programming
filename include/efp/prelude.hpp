@@ -11,8 +11,6 @@
 
 namespace efp {
 
-// todo concat, concat_map
-
 // Fold and Traversals
 
 // foldl :: (A -> B -> A) -> A -> [B] -> A
@@ -186,60 +184,11 @@ auto map(const F& f, const Ass&... ass) -> MapReturn<F, Ass...> {
     return res;
 }
 
-// ConcatReturn
-
-template<typename As, typename... Ass>
-struct ConcatReturnImpl {};
-
-template<typename Ass>
-using ConcatReturn = Conditional<
-    IsStaticSize<Ass>::value && IsStaticSize<Element<Ass>>::value,
-    Array<Element<Element<Ass>>, CtSize<Ass>::value * CtSize<Element<Ass>>::value>,
-    Conditional<
-        IsStaticCapacity<Ass>::value && IsStaticCapacity<Element<Ass>>::value,
-        Conditional<
-            IsStaticSize<Ass>::value,
-            ArrVec<Element<Element<Ass>>, CtSize<Ass>::value * CtCapacity<Element<Ass>>::value>,
-            Conditional<
-                IsStaticSize<Element<Ass>>::value,
-                ArrVec<Element<Element<Ass>>, CtCapacity<Ass>::value * CtSize<Element<Ass>>::value>,
-                ArrVec<
-                    Element<Element<Ass>>,
-                    CtCapacity<Ass>::value * CtCapacity<Element<Ass>>::value>>>,
-        Vector<Element<Element<Ass>>>>>;
-
-// concat :: [[A]] -> [A]
-template<typename Ass>
-auto concat(const Ass& ass) -> ConcatReturn<Ass> {
-    ConcatReturn<Ass> res {};
-
-    const auto ass_len = length(ass);
-
-    if (!IsStaticSize<ConcatReturn<Ass>>::value) {
-        size_t res_len = 0;
-
-        for (size_t i = 0; i < ass_len; ++i) {
-            res_len += length(nth(i, ass));
-        }
-
-        res.resize(res_len);
-    }
-
-    size_t idx = 0;
-    for (size_t i = 0; i < ass_len; ++i) {
-        const auto& as = nth(i, ass);  // Access each as
-        const auto as_len = length(as);
-
-        for (size_t j = 0; j < as_len; ++j) {
-            nth(idx++, res) = nth(j, as);
-        }
-    }
-
-    return res;
-}
+// todo Move append to here
 
 // FilterReturn
-
+// ? Can I define a good rules for the case of string?
+// ? Should I maintain the result for the string like case?
 template<typename As>
 using FilterReturn = Conditional<
     CtCapacity<As>::value != dyn,
@@ -290,7 +239,7 @@ auto last(const As& as) -> const Element<As>& {
 }
 
 // TailReturn
-
+// ? Any good rule for string could be defined?
 template<typename As, bool is_const>
 using TailReturn = EnableIf<
     CtSize<As>::value != 0 && CtCapacity<As>::value != 0,
@@ -329,8 +278,7 @@ auto tail(A& as) -> TailReturn<A, false> {
     return {data(as) + 1, length(as) - 1};
 }
 
-// InitReturn
-
+// InitReturn// ? Any good rule for string could be defined?
 template<typename As, bool is_const>
 using InitReturn = EnableIf<
     CtSize<As>::value != 0 && CtCapacity<As>::value != 0,
@@ -392,6 +340,348 @@ bool is_null(const As& as) {
 // any :: (A -> Bool) -> [A] -> Bool
 
 // all :: (A -> Bool) -> [A] -> Bool
+
+// ConcatReturn
+
+template<typename As, typename... Ass>
+struct ConcatReturnImpl {};
+
+template<typename Ass>
+using ConcatReturn = Conditional<
+    IsStaticSize<Ass>::value && IsStaticSize<Element<Ass>>::value,
+    Array<Element<Element<Ass>>, CtSize<Ass>::value * CtSize<Element<Ass>>::value>,
+    Conditional<
+        IsStaticCapacity<Ass>::value && IsStaticCapacity<Element<Ass>>::value,
+        Conditional<
+            IsStaticSize<Ass>::value,
+            ArrVec<Element<Element<Ass>>, CtSize<Ass>::value * CtCapacity<Element<Ass>>::value>,
+            Conditional<
+                IsStaticSize<Element<Ass>>::value,
+                ArrVec<Element<Element<Ass>>, CtCapacity<Ass>::value * CtSize<Element<Ass>>::value>,
+                ArrVec<
+                    Element<Element<Ass>>,
+                    CtCapacity<Ass>::value * CtCapacity<Element<Ass>>::value>>>,
+        Vector<Element<Element<Ass>>>>>;
+
+// concat :: [[A]] -> [A]
+// ? What about the case As are all std::string? 
+// ? What about the case only some of them is string?
+// ? Maybe I can make the return type optional?
+template<typename Ass>
+auto concat(const Ass& ass) -> ConcatReturn<Ass> {
+    ConcatReturn<Ass> res {};
+
+    const auto ass_len = length(ass);
+
+    if (!IsStaticSize<ConcatReturn<Ass>>::value) {
+        size_t res_len = 0;
+
+        for (size_t i = 0; i < ass_len; ++i) {
+            res_len += length(nth(i, ass));
+        }
+
+        res.resize(res_len);
+    }
+
+    size_t idx = 0;
+    for (size_t i = 0; i < ass_len; ++i) {
+        const auto& as = nth(i, ass);  // Access each as
+        const auto as_len = length(as);
+
+        for (size_t j = 0; j < as_len; ++j) {
+            nth(idx++, res) = nth(j, as);
+        }
+    }
+
+    return res;
+}
+
+// todo concat_map
+
+// Building Lists
+
+// todo scanl
+
+// todo scanl1
+
+// todo scanr
+
+// todo scanr1
+
+// cf) Infinite list is not supported on C++
+
+// Sublists
+
+// TakeUnsafeReturnImpl
+// ! Size must be valid. It must be smaller than compile time and runtime size.
+// ! Invalid size will be undifined behavior
+namespace detail {
+    template<typename N, typename As, bool is_const>
+    struct TakeUnsafeReturnImpl {
+        using Type = Conditional<
+            IsStaticCapacity<As>::value,
+            Conditional<
+                is_const,
+                ArrVecView<const Element<As>, CtCapacity<As>::value>,
+                ArrVecView<Element<As>, CtCapacity<As>::value>>,
+            Conditional<is_const, VectorView<const Element<As>>, VectorView<Element<As>>>>;
+    };
+
+    template<size_t n, typename As, bool is_const>
+    struct TakeUnsafeReturnImpl<Size<n>, As, is_const> {
+        using Type =
+            Conditional<is_const, ArrayView<const Element<As>, n>, ArrayView<Element<As>, n>>;
+    };
+}  // namespace detail
+
+// TakeUnsafeReturn
+
+template<typename N, typename As, bool is_const>
+using TakeUnsafeReturn = typename detail::TakeUnsafeReturnImpl<N, As, is_const>::Type;
+
+// take_unsafe
+
+// ! Should not put n longer than the length. Check should be done by the caller
+
+template<typename N, typename As>
+auto take_unsafe(N n, const As& as) -> TakeUnsafeReturn<N, As, true> {
+    return TakeUnsafeReturn<N, As, true>(data(as), n);
+}
+
+template<typename N, typename As>
+auto take_unsafe(N n, As& as) -> TakeUnsafeReturn<N, As, false> {
+    return TakeUnsafeReturn<N, As, false>(data(as), n);
+}
+
+// TakeReturnImpl
+
+namespace detail {
+    template<typename N, typename As, bool is_const>
+    struct TakeReturnImpl {
+        using Type = Conditional<
+            IsStaticCapacity<As>::value,
+            Conditional<
+                is_const,
+                ArrVecView<const Element<As>, CtCapacity<As>::value>,
+                ArrVecView<Element<As>, CtCapacity<As>::value>>,
+            Conditional<is_const, VectorView<const Element<As>>, VectorView<Element<As>>>>;
+    };
+
+    template<size_t n, typename As, bool is_const>
+    struct TakeReturnImpl<Size<n>, As, is_const> {
+        static constexpr size_t bound_size = min(n, CtSize<As>::value);
+        static constexpr size_t bound_capacity = min(n, CtCapacity<As>::value);
+
+        using Type = Conditional<
+            IsStaticSize<As>::value,
+            Conditional<
+                is_const,
+                ArrayView<const Element<As>, bound_size>,
+                ArrayView<Element<As>, bound_size>>,
+
+            Conditional<
+                is_const,
+                ArrVecView<const Element<As>, bound_capacity>,
+                ArrVecView<Element<As>, bound_capacity>>>;
+    };
+}  // namespace detail
+
+// TakeReturn
+
+template<typename N, typename As, bool is_const>
+using TakeReturn = typename detail::TakeReturnImpl<N, As, is_const>::Type;
+
+// take
+
+template<typename N, typename As>
+auto take(N n, const As& as) -> TakeReturn<N, As, true> {
+    return TakeReturn<N, As, true>(
+        data(as),
+        min(static_cast<size_t>(n), static_cast<size_t>(length(as)))
+    );  // Safeguarding against n > length(as)
+}
+
+template<typename N, typename As>
+auto take(N n, As& as) -> TakeReturn<N, As, false> {
+    return TakeReturn<N, As, false>(
+        data(as),
+        min(static_cast<size_t>(n), static_cast<size_t>(length(as)))
+    );  // Safeguarding against n > length(as)
+}
+
+// DropUnsafeReturnImpl
+
+namespace detail {
+    template<typename N, typename As, bool is_const>
+    struct DropUnsafeReturnImpl {
+        using Type = Conditional<
+            IsStaticCapacity<As>::value,
+            Conditional<
+                is_const,
+                ArrVecView<const Element<As>, CtCapacity<As>::value>,
+                ArrVecView<Element<As>, CtCapacity<As>::value>>,
+            Conditional<is_const, VectorView<const Element<As>>, VectorView<Element<As>>>>;
+    };
+
+    template<size_t n, typename As, bool is_const>
+    struct DropUnsafeReturnImpl<Size<n>, As, is_const> {
+        using Type = Conditional<
+            IsStaticSize<As>::value,
+            Conditional<
+                is_const,
+                ArrayView<const Element<As>, CtSize<As>::value - n>,
+                ArrayView<Element<As>, CtSize<As>::value - n>>,
+            Conditional<
+                IsStaticCapacity<As>::value,
+                Conditional<
+                    is_const,
+                    ArrVecView<const Element<As>, CtCapacity<As>::value - n>,
+                    ArrVecView<Element<As>, CtCapacity<As>::value - n>>,
+                Conditional<is_const, VectorView<const Element<As>>, VectorView<Element<As>>>>>;
+    };
+}  // namespace detail
+
+// DropUnsafeReturn
+
+template<typename N, typename As, bool is_const>
+using DropUnsafeReturn = typename detail::DropUnsafeReturnImpl<N, As, is_const>::Type;
+
+// drop_unsafe
+
+template<typename N, typename As>
+auto drop_unsafe(N n, const As& as) -> DropUnsafeReturn<N, As, true> {
+    return DropUnsafeReturn<N, As, true>(data(as) + n, length(as) - n);
+}
+
+template<typename N, typename As>
+auto drop_unsafe(N n, As& as) -> DropUnsafeReturn<N, As, false> {
+    return DropUnsafeReturn<N, As, false>(data(as) + n, length(as) - n);
+}
+
+// DropReturnImpl
+
+namespace detail {
+    template<typename N, typename As, bool is_const>
+    struct DropReturnImpl {
+        using Type = Conditional<
+            IsStaticCapacity<As>::value,
+            Conditional<
+                is_const,
+                ArrVecView<const Element<As>, CtCapacity<As>::value>,
+                ArrVecView<Element<As>, CtCapacity<As>::value>>,
+            Conditional<is_const, VectorView<const Element<As>>, VectorView<Element<As>>>>;
+    };
+
+    template<size_t n, typename As, bool is_const>
+    struct DropReturnImpl<Size<n>, As, is_const> {
+        static constexpr size_t bound_size = (CtSize<As>::value > n) ? (CtSize<As>::value - n) : 0;
+        static constexpr size_t bound_capacity =
+            (CtCapacity<As>::value > n) ? (CtCapacity<As>::value - n) : 0;
+
+        using Type = Conditional<
+            IsStaticSize<As>::value,
+            Conditional<
+                is_const,
+                ArrayView<const Element<As>, bound_size>,
+                ArrayView<Element<As>, bound_size>>,
+            Conditional<
+                IsStaticCapacity<As>::value,
+                Conditional<
+                    is_const,
+                    ArrVecView<const Element<As>, bound_capacity>,
+                    ArrVecView<Element<As>, bound_capacity>>,
+                Conditional<is_const, VectorView<const Element<As>>, VectorView<Element<As>>>>>;
+    };
+}  // namespace detail
+
+// DropReturn
+
+template<typename N, typename As, bool is_const>
+using DropReturn = typename detail::DropReturnImpl<N, As, is_const>::Type;
+
+// drop
+
+template<typename N, typename As>
+auto drop(N n, const As& as) -> DropReturn<N, As, true> {
+    const size_t as_len = length(as);
+    const size_t bound_drop_size =
+        (static_cast<size_t>(n) > as_len) ? as_len : n;  // Ensuring n doesn't exceed the size of as
+
+    return DropReturn<N, As, true>(data(as) + bound_drop_size, as_len - bound_drop_size);
+}
+
+template<typename N, typename As>
+auto drop(N n, As& as) -> DropReturn<N, As, false> {
+    const size_t as_len = length(as);
+    const size_t bound_drop_size =
+        (static_cast<size_t>(n) > as_len) ? as_len : n;  // Ensuring n doesn't exceed the size of as
+
+    return DropReturn<N, As, false>(data(as) + bound_drop_size, as_len - bound_drop_size);
+}
+
+// take_while
+
+template<typename As>
+using TakeWhileReturn = Conditional<
+    IsStaticCapacity<As>::value,
+    ArrVecView<Element<As>, CtCapacity<As>::value>,
+    VectorView<Element<As>>>;
+
+template<typename As, typename F = bool (*)(const Element<As>&)>
+auto take_while(const F& f, const As& as) -> TakeWhileReturn<As> {
+    const auto as_len = length(as);
+
+    size_t i = 0;
+    while (i < as_len && f(nth(i, as))) {
+        ++i;
+    }
+
+    return take(i, as);
+}
+
+// drop_while
+
+template<typename As>
+using DropWhileReturn = Conditional<
+    IsStaticCapacity<As>::value,
+    ArrVecView<Element<As>, CtCapacity<As>::value>,
+    VectorView<Element<As>>>;
+
+template<typename As, typename F = bool (*)(const Element<As>&)>
+auto drop_while(const F& f, const As& as) -> DropWhileReturn<As> {
+    const auto as_len = length(as);
+
+    size_t i = 0;
+    while (i < as_len && f(nth(i, as))) {
+        ++i;
+    }
+
+    return drop(i, as);
+}
+
+// todo span
+
+// todo break
+
+// todo split_at
+
+// cf) Searching lists is to be implemented
+
+// Ziping
+
+// ? Is ziping and unzipping necessary on C++?
+
+// Functions on strings
+
+// ? Should it be functions to std::string or sequence of char?
+
+// todo lines
+
+// todo words
+
+// todo unlines
+
+// todo unwords
 
 // FromFunctionReturnImpl
 
@@ -680,213 +970,6 @@ void cartesian_for_index(const F& f, size_t n, const Ints&... is) {
     }
 }
 
-// TakeUnsafeReturnImpl
-// ! Size must be valid. It must be smaller than compile time and runtime size.
-// ! Invalid size will be undifined behavior
-namespace detail {
-    template<typename N, typename As, bool is_const>
-    struct TakeUnsafeReturnImpl {
-        using Type = Conditional<
-            IsStaticCapacity<As>::value,
-            Conditional<
-                is_const,
-                ArrVecView<const Element<As>, CtCapacity<As>::value>,
-                ArrVecView<Element<As>, CtCapacity<As>::value>>,
-            Conditional<is_const, VectorView<const Element<As>>, VectorView<Element<As>>>>;
-    };
-
-    template<size_t n, typename As, bool is_const>
-    struct TakeUnsafeReturnImpl<Size<n>, As, is_const> {
-        using Type =
-            Conditional<is_const, ArrayView<const Element<As>, n>, ArrayView<Element<As>, n>>;
-    };
-}  // namespace detail
-
-// TakeUnsafeReturn
-
-template<typename N, typename As, bool is_const>
-using TakeUnsafeReturn = typename detail::TakeUnsafeReturnImpl<N, As, is_const>::Type;
-
-// take_unsafe
-
-// ! Should not put n longer than the length. Check should be done by the caller
-
-template<typename N, typename As>
-auto take_unsafe(N n, const As& as) -> TakeUnsafeReturn<N, As, true> {
-    return TakeUnsafeReturn<N, As, true>(data(as), n);
-}
-
-template<typename N, typename As>
-auto take_unsafe(N n, As& as) -> TakeUnsafeReturn<N, As, false> {
-    return TakeUnsafeReturn<N, As, false>(data(as), n);
-}
-
-// TakeReturnImpl
-
-namespace detail {
-    template<typename N, typename As, bool is_const>
-    struct TakeReturnImpl {
-        using Type = Conditional<
-            IsStaticCapacity<As>::value,
-            Conditional<
-                is_const,
-                ArrVecView<const Element<As>, CtCapacity<As>::value>,
-                ArrVecView<Element<As>, CtCapacity<As>::value>>,
-            Conditional<is_const, VectorView<const Element<As>>, VectorView<Element<As>>>>;
-    };
-
-    template<size_t n, typename As, bool is_const>
-    struct TakeReturnImpl<Size<n>, As, is_const> {
-        static constexpr size_t bound_size = min(n, CtSize<As>::value);
-        static constexpr size_t bound_capacity = min(n, CtCapacity<As>::value);
-
-        using Type = Conditional<
-            IsStaticSize<As>::value,
-            Conditional<
-                is_const,
-                ArrayView<const Element<As>, bound_size>,
-                ArrayView<Element<As>, bound_size>>,
-
-            Conditional<
-                is_const,
-                ArrVecView<const Element<As>, bound_capacity>,
-                ArrVecView<Element<As>, bound_capacity>>>;
-    };
-}  // namespace detail
-
-// TakeReturn
-
-template<typename N, typename As, bool is_const>
-using TakeReturn = typename detail::TakeReturnImpl<N, As, is_const>::Type;
-
-// take
-
-template<typename N, typename As>
-auto take(N n, const As& as) -> TakeReturn<N, As, true> {
-    return TakeReturn<N, As, true>(
-        data(as),
-        min(static_cast<size_t>(n), static_cast<size_t>(length(as)))
-    );  // Safeguarding against n > length(as)
-}
-
-template<typename N, typename As>
-auto take(N n, As& as) -> TakeReturn<N, As, false> {
-    return TakeReturn<N, As, false>(
-        data(as),
-        min(static_cast<size_t>(n), static_cast<size_t>(length(as)))
-    );  // Safeguarding against n > length(as)
-}
-
-// DropUnsafeReturnImpl
-
-namespace detail {
-    template<typename N, typename As, bool is_const>
-    struct DropUnsafeReturnImpl {
-        using Type = Conditional<
-            IsStaticCapacity<As>::value,
-            Conditional<
-                is_const,
-                ArrVecView<const Element<As>, CtCapacity<As>::value>,
-                ArrVecView<Element<As>, CtCapacity<As>::value>>,
-            Conditional<is_const, VectorView<const Element<As>>, VectorView<Element<As>>>>;
-    };
-
-    template<size_t n, typename As, bool is_const>
-    struct DropUnsafeReturnImpl<Size<n>, As, is_const> {
-        using Type = Conditional<
-            IsStaticSize<As>::value,
-            Conditional<
-                is_const,
-                ArrayView<const Element<As>, CtSize<As>::value - n>,
-                ArrayView<Element<As>, CtSize<As>::value - n>>,
-            Conditional<
-                IsStaticCapacity<As>::value,
-                Conditional<
-                    is_const,
-                    ArrVecView<const Element<As>, CtCapacity<As>::value - n>,
-                    ArrVecView<Element<As>, CtCapacity<As>::value - n>>,
-                Conditional<is_const, VectorView<const Element<As>>, VectorView<Element<As>>>>>;
-    };
-}  // namespace detail
-
-// DropUnsafeReturn
-
-template<typename N, typename As, bool is_const>
-using DropUnsafeReturn = typename detail::DropUnsafeReturnImpl<N, As, is_const>::Type;
-
-// drop_unsafe
-
-template<typename N, typename As>
-auto drop_unsafe(N n, const As& as) -> DropUnsafeReturn<N, As, true> {
-    return DropUnsafeReturn<N, As, true>(data(as) + n, length(as) - n);
-}
-
-template<typename N, typename As>
-auto drop_unsafe(N n, As& as) -> DropUnsafeReturn<N, As, false> {
-    return DropUnsafeReturn<N, As, false>(data(as) + n, length(as) - n);
-}
-
-// DropReturnImpl
-
-namespace detail {
-    template<typename N, typename As, bool is_const>
-    struct DropReturnImpl {
-        using Type = Conditional<
-            IsStaticCapacity<As>::value,
-            Conditional<
-                is_const,
-                ArrVecView<const Element<As>, CtCapacity<As>::value>,
-                ArrVecView<Element<As>, CtCapacity<As>::value>>,
-            Conditional<is_const, VectorView<const Element<As>>, VectorView<Element<As>>>>;
-    };
-
-    template<size_t n, typename As, bool is_const>
-    struct DropReturnImpl<Size<n>, As, is_const> {
-        static constexpr size_t bound_size = (CtSize<As>::value > n) ? (CtSize<As>::value - n) : 0;
-        static constexpr size_t bound_capacity =
-            (CtCapacity<As>::value > n) ? (CtCapacity<As>::value - n) : 0;
-
-        using Type = Conditional<
-            IsStaticSize<As>::value,
-            Conditional<
-                is_const,
-                ArrayView<const Element<As>, bound_size>,
-                ArrayView<Element<As>, bound_size>>,
-            Conditional<
-                IsStaticCapacity<As>::value,
-                Conditional<
-                    is_const,
-                    ArrVecView<const Element<As>, bound_capacity>,
-                    ArrVecView<Element<As>, bound_capacity>>,
-                Conditional<is_const, VectorView<const Element<As>>, VectorView<Element<As>>>>>;
-    };
-}  // namespace detail
-
-// DropReturn
-
-template<typename N, typename As, bool is_const>
-using DropReturn = typename detail::DropReturnImpl<N, As, is_const>::Type;
-
-// drop
-
-template<typename N, typename As>
-auto drop(N n, const As& as) -> DropReturn<N, As, true> {
-    const size_t as_len = length(as);
-    const size_t bound_drop_size =
-        (static_cast<size_t>(n) > as_len) ? as_len : n;  // Ensuring n doesn't exceed the size of as
-
-    return DropReturn<N, As, true>(data(as) + bound_drop_size, as_len - bound_drop_size);
-}
-
-template<typename N, typename As>
-auto drop(N n, As& as) -> DropReturn<N, As, false> {
-    const size_t as_len = length(as);
-    const size_t bound_drop_size =
-        (static_cast<size_t>(n) > as_len) ? as_len : n;  // Ensuring n doesn't exceed the size of as
-
-    return DropReturn<N, As, false>(data(as) + bound_drop_size, as_len - bound_drop_size);
-}
-
 // SliceUnsafeReturn
 
 template<typename S, typename E, typename As, bool is_const>
@@ -927,46 +1010,6 @@ auto slice(S start, E end, const As& as) -> SliceReturn<S, E, As, true> {
 template<typename S, typename E, typename As>
 auto slice(S start, E end, As& as) -> SliceReturn<S, E, As, false> {
     return SliceReturn<S, E, As, false>(data(as) + start, end - start);
-}
-
-// take_while
-
-template<typename As>
-using TakeWhileReturn = Conditional<
-    IsStaticCapacity<As>::value,
-    ArrVecView<Element<As>, CtCapacity<As>::value>,
-    VectorView<Element<As>>>;
-
-template<typename As, typename F = bool (*)(const Element<As>&)>
-auto take_while(const F& f, const As& as) -> TakeWhileReturn<As> {
-    const auto as_len = length(as);
-
-    size_t i = 0;
-    while (i < as_len && f(nth(i, as))) {
-        ++i;
-    }
-
-    return take(i, as);
-}
-
-// drop_while
-
-template<typename As>
-using DropWhileReturn = Conditional<
-    IsStaticCapacity<As>::value,
-    ArrVecView<Element<As>, CtCapacity<As>::value>,
-    VectorView<Element<As>>>;
-
-template<typename As, typename F = bool (*)(const Element<As>&)>
-auto drop_while(const F& f, const As& as) -> DropWhileReturn<As> {
-    const auto as_len = length(as);
-
-    size_t i = 0;
-    while (i < as_len && f(nth(i, as))) {
-        ++i;
-    }
-
-    return drop(i, as);
 }
 
 // elem

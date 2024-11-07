@@ -8,6 +8,96 @@
 
 namespace efp {
 
+// Functor
+template<typename F, template<typename...> class Functor, typename A>
+auto fmap(const F& f, const Functor<A>& a) -> Functor<decltype(f(a))> {
+    static_assert(AlwaysFalse<F>::value, "fmap is not implemented for the type");
+    return {};
+}
+
+// Implement Functor for std::array
+template<typename F, typename A, size_t n>
+auto fmap(const F& f, const std::array<A, n>& a) -> std::array<decltype(f(a[0])), n> {
+    std::array<A, n> result;
+
+    for (size_t i = 0; i < n; ++i) {
+        result[i] = f(a[i]);
+    }
+
+    return result;
+}
+
+// Implement Functor for std::vector
+template<typename F, typename A>
+// auto fmap(const std::function<A(const A&)>& f, const std::vector<A>& a) -> std::vector<A> {
+auto fmap(const F& f, const std::vector<A>& a) -> std::vector<decltype(f(a[0]))> {
+    std::vector<A> result;
+    result.reserve(a.size());
+
+    for (const auto& x : a) {
+        result.push_back(f(x));
+    }
+
+    return result;
+}
+
+// Applicative
+template<template<typename...> class Applicative, typename A>
+auto pure(const A& a) -> Applicative<A> {
+    static_assert(AlwaysFalse<A>::value, "pure is not implemented for the type");
+    return {};
+}
+
+template<typename F, template<typename...> class Applicative, typename A>
+auto apply(const Applicative<F>& f, const Applicative<A>& a) -> Applicative<decltype(f(a))> {
+    static_assert(AlwaysFalse<F>::value, "apply is not implemented for the type");
+    return {};
+}
+
+// Monad
+template<template<typename...> class Monad, typename A>
+auto pure(const A& a) -> Monad<A> {
+    static_assert(AlwaysFalse<A>::value, "pure is not implemented for the type");
+    return {};
+}
+
+template<typename F, template<typename...> class Monad, typename A>
+auto bind(const F& f, const Monad<A>& a) -> Monad<decltype(f(a))> {
+    static_assert(AlwaysFalse<F>::value, "bind is not implemented for the type");
+    return {};
+}
+
+// Implement Monad for std::vector
+template<typename A>
+auto pure(const A& a) -> std::vector<A> {
+    return {a};
+}
+
+template<typename F, typename A>
+auto bind(const F& f, const std::vector<A>& a) -> std::vector<decltype(f(a[0]))> {
+    std::vector<A> result;
+
+    for (const auto& x : a) {
+        auto y = f(x);
+        result.insert(result.end(), y.begin(), y.end());
+    }
+
+    return result;
+}
+
+// Io action trait
+template<typename A>
+auto run() -> A {
+    static_assert(AlwaysFalse<A>::value, "run is not implemented for the type");
+    return {};
+}
+
+
+
+
+
+//////////////////////////////////////
+
 // Element trait
 // Should be the type of the elements of the sequence
 template<typename A>

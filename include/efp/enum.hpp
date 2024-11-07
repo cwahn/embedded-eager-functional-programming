@@ -297,14 +297,12 @@ namespace detail {
         template<
             typename Alt,
             typename = EnableIf<
-                // Or<IsSame<Alt, ConstRemoved<A>>, IsSame<Alt, ConstRemoved<As>>...>::value>>
                 _or({IsSame<Alt, ConstRemoved<A>>::value, IsSame<Alt, ConstRemoved<As>>::value...}
                 )>>
         EnumBase(const Alt& alt) : _index(CCAltIndex<Alt>::value) {
             new (reinterpret_cast<Alt*>(_storage)) Alt(alt);
         }
 
-        // template<typename Alt, typename = EnableIf<Or<IsSame<Alt, A>, IsSame<Alt, As>...>::value>>
         template<
             typename Alt,
             typename = EnableIf<_or({IsSame<Alt, A>::value, IsSame<Alt, As>::value...})>>
