@@ -299,12 +299,12 @@ TEST_CASE("Vcq Rule of 5", "Vcq") {
 }
 
 TEST_CASE("Vcq") {
-    // SECTION("Initializer List Construction", "Vcq") {
-    //     const Vcq<int, 3> vcq{1, 2, 3};
-    //     CHECK(vcq[0] == 1);
-    //     CHECK(vcq[1] == 2);
-    //     CHECK(vcq[2] == 3);
-    // }
+    SECTION("Initializer List Construction", "Vcq") {
+        const Vcq<int, 3> vcq{1, 2, 3};
+        CHECK(vcq[0] == 1);
+        CHECK(vcq[1] == 2);
+        CHECK(vcq[2] == 3);
+    }
 
     SECTION("Array") {
         Vcq<int, 3> vcq;

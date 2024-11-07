@@ -25,7 +25,6 @@ namespace efp {
 
         Vcb(const Vcb& other) {
             for (size_t i = 0; i < ct_size * 2; ++i) {
-                // new (_buffer + i) Element{other._buffer[i]};
                 new (_buffer + i) Element{other._buffer[i]};
             }
             _data = _buffer + (other._data - other._buffer);
@@ -34,7 +33,6 @@ namespace efp {
         Vcb& operator=(const Vcb& other) {
             for (size_t i = 0; i < ct_size * 2; ++i) {
                 (_buffer + i)->~Element();
-                // new (_buffer + i) Element{other._buffer[i]};
                 new (_buffer + i) Element{other._buffer[i]};
             }
             _data = _buffer + (other._data - other._buffer);
@@ -43,7 +41,6 @@ namespace efp {
 
         Vcb(Vcb&& other) noexcept {
             for (size_t i = 0; i < ct_size * 2; ++i) {
-                // new (_buffer + i) Element{efp::move(other._buffer[i])};
                 new (_buffer + i) Element{efp::move(other._buffer[i])};
             }
 
@@ -53,7 +50,6 @@ namespace efp {
         Vcb operator=(Vcb&& other) noexcept {
             for (size_t i = 0; i < ct_size * 2; ++i) {
                 (_buffer + i)->~Element();
-                // new (_buffer + i) Element{efp::move(other._buffer[i])};
                 new (_buffer + i) Element{efp::move(other._buffer[i])};
             }
 
@@ -190,7 +186,7 @@ namespace efp {
         static constexpr size_t ct_capacity = n;
 
         Vcq() {
-            // Buffers are uninitialized
+            // ! Buffers are uninitialized
             _size = 0;
             _read = _buffer;
             _write = _buffer;
@@ -281,6 +277,23 @@ namespace efp {
                 (_buffer + j)->~Element();
                 (_buffer + ct_capacity + j)->~Element();
             }
+        }
+
+        Vcq(InitializerList<Element> il) {
+            if (il.size() > ct_capacity) {
+                throw RuntimeError("Vcq::Vcq: number of arguments must be less than or equal to ct_capacity");
+            }
+
+            size_t index = 0;
+            for (const auto& e : il) {
+                new (_buffer + index) Element{e};
+                new (_buffer + ct_capacity + index) Element{e};
+                ++index;
+            }
+
+            _size = il.size();
+            _read = _buffer;
+            _write = _buffer + _size;
         }
 
         A& operator[](const SizeType index) {
